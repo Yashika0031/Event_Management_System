@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Winners - TechFest</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link th:href="@{/css/style.css}" rel="stylesheet">
+    <style>
+        .navbar-dark .navbar-nav .nav-link {
+            color: #f8f9fa !important;
+        }
+        .navbar-dark .navbar-brand {
+            color: #f8f9fa !important;
+        }
+        .navbar-dark .navbar-nav .nav-link:hover {
+            color: #ffffff !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-calendar-alt me-2"></i>
+                TechFest
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/"><i class="fas fa-home me-1"></i>Home</a>
+                <a class="nav-link" href="/events"><i class="fas fa-calendar me-1"></i>Events</a>
+                <a class="nav-link" href="/registrations/register"><i class="fas fa-user-plus me-1"></i>Register</a>
+                <a class="nav-link" href="/student"><i class="fas fa-user me-1"></i>Student Portal</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1><i class="fas fa-trophy me-2 text-warning"></i>Winners</h1>
+                <p class="text-muted" th:if="${event}" th:text="'Winners for ' + ${event.eventName}">Winners for selected event</p>
+                <p class="text-muted" th:unless="${event}">All event winners</p>
+            </div>
+            <div>
+                <a href="/winners/declare" class="btn btn-success me-2">
+                    <i class="fas fa-award me-2"></i>Declare Winners
+                </a>
+                <!-- <a href="/admin" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Admin
+                </a> -->
+            </div>
+        </div>
+
+        <!-- Event Filter -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title"><i class="fas fa-filter me-2"></i>Filter by Event</h5>
+                <form method="get" action="/winners">
+                    <div class="row align-items-end">
+                        <div class="col-md-8">
+                            <select name="eventId" class="form-select">
+                                <option value="">All Events</option>
+                                <option th:each="evt : ${events}" 
+                                        th:value="${evt.eventId}" 
+                                        th:text="${evt.eventName}"
+                                        th:selected="${event != null and event.eventId == evt.eventId}">Event Name</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-search me-2"></i>Filter
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Messages -->
+        <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle me-2"></i>
+            <span th:text="${successMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        
+        <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i>
+            <span th:text="${errorMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <!-- Winners List -->
+        <div th:if="${#lists.isEmpty(winners)}" class="text-center py-5">
+            <i class="fas fa-trophy fa-4x text-muted mb-3"></i>
+            <h3 class="text-muted">No Winners Found</h3>
+            <p class="text-muted" th:if="${event}" th:text="'No winners have been declared for ' + ${event.eventName} + ' yet.'">No winners declared for this event yet.</p>
+            <p class="text-muted" th:unless="${event}">No winners have been declared for any events yet.</p>
+            <a href="/winners/declare" class="btn btn-success">
+                <i class="fas fa-award me-2"></i>Declare Winners
+            </a>
+        </div>
+
+        <div th:if="${!#lists.isEmpty(winners)}" class="row">
+            <div th:each="winner : ${winners}" class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-header text-white" 
+                         th:classappend="${winner.position == 1} ? 'bg-warning' : (${winner.position == 2} ? 'bg-secondary' : 'bg-dark')">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-trophy me-2"></i>
+                                <span th:switch="${winner.position}">
+                                    <span th:case="1">🥇 1st Place</span>
+                                    <span th:case="2">🥈 2nd Place</span>
+                                    <span th:case="3">🥉 3rd Place</span>
+                                    <span th:case="*" th:text="'Position ' + ${winner.position}">Position</span>
+                                </span>
+                            </h5>
+                            <a th:href="@{/winners/{id}/delete(id=${winner.winnerId})}" 
+                               class="btn btn-sm btn-outline-light"
+                               onclick="return confirm('Are you sure you want to remove this winner?')"
+                               title="Remove Winner">
+                                <i class="fas fa-times"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-2">
+                            <i class="fas fa-user text-primary me-2"></i>
+                            <strong th:text="${rollToNameMap[winner.rollNo]} ?: ${winner.rollNo}">Winner Name</strong>
+                            <small class="text-muted ms-2" th:text="'(Roll: ' + ${winner.rollNo} + ')'">Roll No</small>
+                        </div>
+                        <div class="mb-2" th:if="${winner.event}">
+                            <i class="fas fa-calendar text-success me-2"></i>
+                            <span th:text="${winner.event.eventName}">Event Name</span>
+                        </div>
+                        <div class="mb-2" th:if="${winner.event}">
+                            <i class="fas fa-calendar-day text-info me-2"></i>
+                            <span th:text="${#temporals.format(winner.event.eventDate, 'dd MMM yyyy')}">Event Date</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

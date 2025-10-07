@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${event.eventId == 0 ? 'Create Event' : 'Edit Event'} + ' - TechFest'">Event Form - TechFest</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .navbar-dark .navbar-nav .nav-link {
+            color: #f8f9fa !important;
+        }
+        .navbar-dark .navbar-brand {
+            color: #f8f9fa !important;
+        }
+        .navbar-dark .navbar-nav .nav-link:hover {
+            color: #ffffff !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-calendar-alt me-2"></i>
+                TechFest
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/"><i class="fas fa-home me-1"></i>Home</a>
+                <a class="nav-link" href="/events"><i class="fas fa-calendar me-1"></i>Events</a>
+                <a class="nav-link" href="/registrations/register"><i class="fas fa-user-plus me-1"></i>Register</a>
+                <a class="nav-link" href="/student"><i class="fas fa-user me-1"></i>Student Portal</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                <div class="card shadow">
+                    <div class="card-header bg-primary text-white">
+                        <h4 class="mb-0">
+                            <i class="fas fa-calendar-plus me-2"></i>
+                            <span th:text="${event.eventId == 0 ? 'Create New Event' : 'Edit Event'}">Event Form</span>
+                        </h4>
+                    </div>
+                    <div class="card-body">
+                        <form th:action="${event.eventId == 0 ? '/events' : '/events/' + event.eventId}" 
+                              method="post" 
+                              th:object="${event}">
+                            
+                            <div class="mb-3">
+                                <label for="eventName" class="form-label">
+                                    <i class="fas fa-tag text-primary me-1"></i>Event Name *
+                                </label>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="eventName" 
+                                       th:field="*{eventName}"
+                                       th:classappend="${#fields.hasErrors('eventName')} ? 'is-invalid' : ''"
+                                       placeholder="Enter event name"
+                                       required>
+                                <div th:if="${#fields.hasErrors('eventName')}" 
+                                     class="invalid-feedback"
+                                     th:errors="*{eventName}">
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="maxParticipants" class="form-label">
+                                    <i class="fas fa-users text-success me-1"></i>Max Participants *
+                                </label>
+                                <input type="number" 
+                                       class="form-control" 
+                                       id="maxParticipants" 
+                                       th:field="*{maxParticipants}"
+                                       th:classappend="${#fields.hasErrors('maxParticipants')} ? 'is-invalid' : ''"
+                                       placeholder="Enter maximum number of participants"
+                                       min="1"
+                                       required>
+                                <div th:if="${#fields.hasErrors('maxParticipants')}" 
+                                     class="invalid-feedback"
+                                     th:errors="*{maxParticipants}">
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="eventDate" class="form-label">
+                                    <i class="fas fa-calendar-day text-info me-1"></i>Event Date *
+                                </label>
+                                <input type="date" 
+                                       class="form-control" 
+                                       id="eventDate" 
+                                       th:field="*{eventDate}"
+                                       th:classappend="${#fields.hasErrors('eventDate')} ? 'is-invalid' : ''"
+                                       required>
+                                <div th:if="${#fields.hasErrors('eventDate')}" 
+                                     class="invalid-feedback"
+                                     th:errors="*{eventDate}">
+                                </div>
+                            </div>
+
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <a href="/events" class="btn btn-secondary me-md-2">
+                                    <i class="fas fa-times me-1"></i>Cancel
+                                </a>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save me-1"></i>
+                                    <span th:text="${event.eventId == 0 ? 'Create Event' : 'Update Event'}">Submit</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

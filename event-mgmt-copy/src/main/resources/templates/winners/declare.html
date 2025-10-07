@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Declare Winners - TechFest</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link th:href="@{/css/style.css}" rel="stylesheet">
+    <style>
+        .navbar-dark .navbar-nav .nav-link {
+            color: #f8f9fa !important;
+        }
+        .navbar-dark .navbar-brand {
+            color: #f8f9fa !important;
+        }
+        .navbar-dark .navbar-nav .nav-link:hover {
+            color: #ffffff !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-calendar-alt me-2"></i>
+                TechFest
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/"><i class="fas fa-home me-1"></i>Home</a>
+                <a class="nav-link" href="/events"><i class="fas fa-calendar me-1"></i>Events</a>
+                <a class="nav-link" href="/registrations/register"><i class="fas fa-user-plus me-1"></i>Register</a>
+                <a class="nav-link" href="/student"><i class="fas fa-user me-1"></i>Student Portal</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1><i class="fas fa-award me-2 text-warning"></i>Declare Winners</h1>
+                <p class="text-muted">Select an event and declare the top 3 winners</p>
+            </div>
+            <a href="/winners" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Back to Winners
+            </a>
+        </div>
+
+        <!-- Event Selection -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title"><i class="fas fa-calendar me-2"></i>Select Event</h5>
+                <form method="get" action="/winners/declare">
+                    <div class="row align-items-end">
+                        <div class="col-md-8">
+                            <select name="eventId" class="form-select" onchange="this.form.submit()">
+                                <option value="">Choose an event...</option>
+                                <option th:each="event : ${events}" 
+                                        th:value="${event.eventId}" 
+                                        th:text="${event.eventName} + ' (' + ${#temporals.format(event.eventDate, 'dd MMM yyyy')} + ')'"
+                                        th:selected="${selectedEvent != null and selectedEvent.eventId == event.eventId}">Event Name</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-search me-2"></i>Load Event
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Messages -->
+        <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i>
+            <span th:text="${errorMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <!-- Winner Declaration Form -->
+        <div th:if="${selectedEvent}" class="row">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-trophy me-2"></i>
+                            Declare Winners for <span th:text="${selectedEvent.eventName}">Event Name</span>
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <!-- Existing Winners Warning -->
+                        <div th:if="${!#lists.isEmpty(existingWinners)}" class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>Note:</strong> Winners have already been declared for this event. Declaring new winners will replace the existing ones.
+                        </div>
+
+                        <form method="post" action="/winners/declare">
+                            <input type="hidden" name="eventId" th:value="${selectedEvent.eventId}">
+                            
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    <i class="fas fa-trophy text-warning me-2"></i>
+                                    <strong>🥇 First Place Winner</strong>
+                                </label>
+                                <select name="firstPlace" class="form-select" required>
+                                    <option value="">Select first place winner...</option>
+                                    <option th:each="registration : ${registrations}" 
+                                            th:value="${registration.rollNo}" 
+                                            th:text="${registration.name} + ' (' + ${registration.contact} + ')'"
+                                            th:disabled="${existingWinners != null and #lists.contains(existingWinners.![rollNo], registration.rollNo)}">Participant Name</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    <i class="fas fa-trophy text-secondary me-2"></i>
+                                    <strong>🥈 Second Place Winner</strong>
+                                </label>
+                                <select name="secondPlace" class="form-select" required>
+                                    <option value="">Select second place winner...</option>
+                                    <option th:each="registration : ${registrations}" 
+                                            th:value="${registration.rollNo}" 
+                                            th:text="${registration.name} + ' (' + ${registration.contact} + ')'"
+                                            th:disabled="${existingWinners != null and #lists.contains(existingWinners.![rollNo], registration.rollNo)}">Participant Name</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    <i class="fas fa-trophy text-dark me-2"></i>
+                                    <strong>🥉 Third Place Winner</strong>
+                                </label>
+                                <select name="thirdPlace" class="form-select" required>
+                                    <option value="">Select third place winner...</option>
+                                    <option th:each="registration : ${registrations}" 
+                                            th:value="${registration.rollNo}" 
+                                            th:text="${registration.name} + ' (' + ${registration.contact} + ')'"
+                                            th:disabled="${existingWinners != null and #lists.contains(existingWinners.![rollNo], registration.rollNo)}">Participant Name</option>
+                                </select>
+                            </div>
+
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-success btn-lg">
+                                    <i class="fas fa-award me-2"></i>Declare Winners
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <!-- Event Info -->
+                <div class="card mb-3">
+                    <div class="card-header bg-info text-white">
+                        <h6 class="mb-0"><i class="fas fa-info-circle me-2"></i>Event Information</h6>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Event:</strong> <span th:text="${selectedEvent.eventName}">Event Name</span></p>
+                        <p><strong>Date:</strong> <span th:text="${#temporals.format(selectedEvent.eventDate, 'dd MMM yyyy')}">Event Date</span></p>
+                        <p><strong>Total Participants:</strong> <span th:text="${#lists.size(registrations)}">0</span></p>
+                    </div>
+                </div>
+
+                <!-- Existing Winners -->
+                <div th:if="${!#lists.isEmpty(existingWinners)}" class="card">
+                    <div class="card-header bg-warning text-dark">
+                        <h6 class="mb-0"><i class="fas fa-trophy me-2"></i>Current Winners</h6>
+                    </div>
+                    <div class="card-body">
+                        <div th:each="winner : ${existingWinners}" class="mb-2">
+                            <span th:switch="${winner.position}" class="badge me-2">
+                                <span th:case="1" class="badge bg-warning">🥇 1st</span>
+                                <span th:case="2" class="badge bg-secondary">🥈 2nd</span>
+                                <span th:case="3" class="badge bg-dark">🥉 3rd</span>
+                                <span th:case="*" class="badge bg-primary" th:text="${winner.position}">Position</span>
+                            </span>
+                            <span th:text="${winner.rollNo}">Winner Roll No</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- No Event Selected -->
+        <div th:unless="${selectedEvent}" class="text-center py-5">
+            <i class="fas fa-calendar-times fa-4x text-muted mb-3"></i>
+            <h3 class="text-muted">No Event Selected</h3>
+            <p class="text-muted">Please select an event from the dropdown above to declare winners.</p>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Prevent selecting the same participant multiple times
+        document.addEventListener('DOMContentLoaded', function() {
+            const selects = ['firstPlace', 'secondPlace', 'thirdPlace'];
+            
+            selects.forEach(selectName => {
+                document.querySelector(`select[name="${selectName}"]`).addEventListener('change', function() {
+                    updateOptions();
+                });
+            });
+            
+            function updateOptions() {
+                const selectedValues = selects.map(name => 
+                    document.querySelector(`select[name="${name}"]`).value
+                ).filter(value => value !== '');
+                
+                selects.forEach(selectName => {
+                    const select = document.querySelector(`select[name="${selectName}"]`);
+                    const currentValue = select.value;
+                    
+                    Array.from(select.options).forEach(option => {
+                        if (option.value !== '' && option.value !== currentValue) {
+                            option.disabled = selectedValues.includes(option.value);
+                        }
+                    });
+                });
+            }
+        });
+    </script>
+</body>
+</html>
